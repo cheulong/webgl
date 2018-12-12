@@ -1,4 +1,5 @@
 function init() {
+  var stats = initStats();
   //Scene
   var scene = new THREE.Scene();
 
@@ -69,7 +70,37 @@ function init() {
   scene.add(sphere);
 
   document.getElementById("WebGL-output").appendChild(renderer.domElement);
-  renderer.render(scene, camera);
+
+  //Add GUI
+  var controls = new function() {
+    this.rotationSpeed = 0.02;
+  }();
+
+  var gui = new dat.GUI();
+  gui.add(controls, "rotationSpeed", 0, 0.5);
+
+  animate();
+
+  function initStats() {
+    var stats = new Stats();
+    stats.setMode(0);
+    stats.domElement.style.position = "absolute";
+    stats.domElement.style.left = "0px";
+    stats.domElement.style.top = "0px";
+    document.getElementById("Stats-output").appendChild(stats.domElement);
+    return stats;
+  }
+
+  function animate() {
+    stats.update();
+
+    cube.rotation.x += controls.rotationSpeed;
+    cube.rotation.y += 0.02;
+    cube.rotation.z += 0.02;
+
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
 }
 
 window.onload = init;
