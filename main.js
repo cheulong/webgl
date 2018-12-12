@@ -91,6 +91,13 @@ function init() {
     return stats;
   }
 
+  //OnResize
+  function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
   function animate() {
     stats.update();
 
@@ -101,6 +108,9 @@ function init() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }
+
+  // listen to the resize events
+  window.addEventListener("resize", onResize, false);
 }
 
 window.onload = init;
