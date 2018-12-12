@@ -5,7 +5,7 @@ function init() {
   // // Add fog dentity from near to far
   // scene.fog = new THREE.Fog(0xffffff, 0.015, 100);
   //Add fog equal dentity
-  scene.fog = new THREE.FogExp2(0xffffff, 0.01);
+  // scene.fog = new THREE.FogExp2(0xffffff, 0.01);
   // //Add overrideMaterial
   // scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
 
@@ -33,7 +33,8 @@ function init() {
   scene.add(axes);
 
   // add subtle ambient lighting
-  var ambientLight = new THREE.AmbientLight(0x000000);
+  var ambiColor = "#0c0c0c";
+  var ambientLight = new THREE.AmbientLight(ambiColor);
   scene.add(ambientLight);
 
   //Add SpotLight
@@ -84,18 +85,19 @@ function init() {
 
   //Add GUI
   var controls = new function() {
-    this.rotationSpeed = 0.02;
-    this.positionX = -4;
-    this.positionY = 3;
-    this.positionZ = 0;
+    this.ambientColor = ambiColor;
+    this.disableAmbientColor = false;
   }();
 
   var gui = new dat.GUI();
-  gui.add(controls, "rotationSpeed", 0, 0.5);
-  guiPosition = gui.addFolder("cubepositon");
-  guiPosition.add(controls, "positionX", -4, 4);
-  guiPosition.add(controls, "positionY", -4, 4);
-  guiPosition.add(controls, "positionZ", -4, 4);
+  guiAmbient = gui.addFolder("Ambient");
+  guiAmbient.addColor(controls, "ambientColor").onChange(function(e) {
+    ambientLight.color = new THREE.Color(e);
+  });
+  guiAmbient.add(controls, "disableAmbientColor").onChange(function(e) {
+    ambientLight.visible = !e;
+  });
+
   animate();
 
   function initStats() {
@@ -118,12 +120,10 @@ function init() {
   function animate() {
     stats.update();
 
-    cube.rotation.x += controls.rotationSpeed;
-    cube.rotation.y += controls.rotationSpeed;
-    cube.rotation.z += controls.rotationSpeed;
-    cube.position.x = controls.positionX;
-    cube.position.y = controls.positionY;
-    cube.position.z = controls.positionZ;
+    cube.rotation.x += 0.02;
+    cube.rotation.y += 0.02;
+    cube.rotation.z += 0.02;
+
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }
