@@ -37,15 +37,36 @@ function init() {
   var ambientLight = new THREE.AmbientLight(ambiColor);
   scene.add(ambientLight);
 
+  // add a small sphere simulating the pointlight
+  var sphereLight = new THREE.SphereGeometry(0.2);
+  var sphereLightMaterial = new THREE.MeshBasicMaterial({ color: 0xac6c25 });
+  var sphereLightMesh = new THREE.Mesh(sphereLight, sphereLightMaterial);
+  sphereLightMesh.castShadow = true;
+
+  sphereLightMesh.position.set(0, 10, 0);
+  scene.add(sphereLightMesh);
+
+  // add point lighting
+  var pointDistance = 10;
+  var pointIntensity = 0.4;
+  var pointColor = "#FFFFFF";
+  var pointLight = new THREE.PointLight(
+    pointColor,
+    pointIntensity,
+    pointDistance
+  );
+  pointLight.position.set(-40, 60, -10);
+  scene.add(pointLight);
+
   //Add SpotLight
   var spotLight = new THREE.SpotLight(0xffffff);
   spotLight.castShadow = true;
   spotLight.position.set(-40, 60, -10);
-  scene.add(spotLight);
+  // scene.add(spotLight);
 
   //Add Plane
   var planeGeometry = new THREE.PlaneGeometry(60, 20);
-  var planeMaterial = new THREE.MeshLambertMaterial({ color: 0xcccccc });
+  var planeMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
   var plane = new THREE.Mesh(planeGeometry, planeMaterial);
   plane.receiveShadow = true;
   plane.rotation.x = -0.5 * Math.PI;
@@ -87,15 +108,49 @@ function init() {
   var controls = new function() {
     this.ambientColor = ambiColor;
     this.disableAmbientColor = false;
+    this.pointDistance = 10;
+    this.pointIntensity = 0.4;
+    this.pointColor = "#FFFFFF";
+    this.disablePointLight = false;
+    this.positionX = 0;
+    this.positionY = 10;
+    this.positionZ = 0;
   }();
 
   var gui = new dat.GUI();
+
   guiAmbient = gui.addFolder("Ambient");
   guiAmbient.addColor(controls, "ambientColor").onChange(function(e) {
     ambientLight.color = new THREE.Color(e);
   });
   guiAmbient.add(controls, "disableAmbientColor").onChange(function(e) {
     ambientLight.visible = !e;
+  });
+
+  guiPoint = gui.addFolder("PointLight");
+  guiPoint.addColor(controls, "pointColor").onChange(function(e) {
+    pointLight.color = new THREE.Color(e);
+  });
+  guiPoint.add(controls, "pointIntensity", 0, 3).onChange(function(e) {
+    pointLight.intensity = e;
+  });
+  guiPoint.add(controls, "pointDistance", 0, 100).onChange(function(e) {
+    pointLight.distance = e;
+  });
+  guiPoint.add(controls, "disablePointLight").onChange(function(e) {
+    pointLight.visible = !e;
+  });
+  guiPoint.add(controls, "positionX", 0, 100).onChange(function(e) {
+    pointLight.position.x = e;
+    sphereLightMesh.position.x = e;
+  });
+  guiPoint.add(controls, "positionY", 0, 100).onChange(function(e) {
+    pointLight.position.y = e;
+    sphereLightMesh.position.y = e;
+  });
+  guiPoint.add(controls, "positionZ", 0, 100).onChange(function(e) {
+    pointLight.position.z = e;
+    sphereLightMesh.position.z = e;
   });
 
   animate();
