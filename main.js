@@ -2,6 +2,12 @@ function init() {
   var stats = initStats();
   //Scene
   var scene = new THREE.Scene();
+  // // Add fog dentity from near to far
+  // scene.fog = new THREE.Fog(0xffffff, 0.015, 100);
+  //Add fog equal dentity
+  scene.fog = new THREE.FogExp2(0xffffff, 0.01);
+  // //Add overrideMaterial
+  // scene.overrideMaterial = new THREE.MeshLambertMaterial({ color: 0xffffff });
 
   //Camera
   var camera = new THREE.PerspectiveCamera(
@@ -25,6 +31,10 @@ function init() {
   // //Add axes
   var axes = new THREE.AxisHelper(20);
   scene.add(axes);
+
+  // add subtle ambient lighting
+  var ambientLight = new THREE.AmbientLight(0x000000);
+  scene.add(ambientLight);
 
   //Add SpotLight
   var spotLight = new THREE.SpotLight(0xffffff);
@@ -50,6 +60,7 @@ function init() {
     wireframe: false
   });
   var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  cube.name = "cube-1";
   cube.castShadow = true;
   cube.position.x = -4;
   cube.position.y = 3;
@@ -74,11 +85,17 @@ function init() {
   //Add GUI
   var controls = new function() {
     this.rotationSpeed = 0.02;
+    this.positionX = -4;
+    this.positionY = 3;
+    this.positionZ = 0;
   }();
 
   var gui = new dat.GUI();
   gui.add(controls, "rotationSpeed", 0, 0.5);
-
+  guiPosition = gui.addFolder("cubepositon");
+  guiPosition.add(controls, "positionX", -4, 4);
+  guiPosition.add(controls, "positionY", -4, 4);
+  guiPosition.add(controls, "positionZ", -4, 4);
   animate();
 
   function initStats() {
@@ -102,9 +119,11 @@ function init() {
     stats.update();
 
     cube.rotation.x += controls.rotationSpeed;
-    cube.rotation.y += 0.02;
-    cube.rotation.z += 0.02;
-
+    cube.rotation.y += controls.rotationSpeed;
+    cube.rotation.z += controls.rotationSpeed;
+    cube.position.x = controls.positionX;
+    cube.position.y = controls.positionY;
+    cube.position.z = controls.positionZ;
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }
