@@ -1,5 +1,8 @@
 function init() {
   var stats = initStats();
+  // Keeps track of time
+  var clock = new THREE.Clock();
+
   //Scene
   var scene = new THREE.Scene();
   // // Add fog dentity from near to far
@@ -17,19 +20,25 @@ function init() {
     1000
   );
   var controls = new THREE.OrbitControls(camera);
-  controls.enableZoom = false;
-  controls.enablePan = false;
+
   camera.position.x = -30;
   camera.position.y = 40;
   camera.position.z = 30;
   camera.lookAt(scene.position);
 
   //Render
-  var renderer = new THREE.WebGLRenderer();
+  var renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setClearColor(new THREE.Color(0xeeeeee));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMapSoft = true;
+
+  // Apply VR stereo rendering to renderer
+  var effect = new THREE.VREffect(renderer);
+  effect.setSize(window.innerWidth, window.innerHeight);
+
+  // Create a VR manager helper to enter and exit VR mode
+  var manager = new WebVRManager(renderer, effect);
 
   function setOrientationControls(e) {
     if (!e.alpha) {
@@ -49,8 +58,13 @@ function init() {
     );
   }
   window.addEventListener("deviceorientation", setOrientationControls, true);
-  //Effect
-  effect = new THREE.StereoEffect(renderer);
+
+  //VREffect
+  effect = new THREE.VREffect(renderer);
+  effect.setSize(window.innerWidth, window.innerHeight);
+
+  // Create a VR manager helper to enter and exit VR mode
+  var manager = new WebVRManager(renderer, effect);
 
   // //Add axes
   var axes = new THREE.AxesHelper(20);
@@ -125,7 +139,10 @@ function init() {
 
   //Add Plane
   var planeGeometry = new THREE.PlaneGeometry(60, 20);
-  var planeMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+  var planeMaterial = new THREE.MeshPhongMaterial({
+    color: 0xcccccc,
+    Side: THREE.DoubleSide
+  });
   var plane = new THREE.Mesh(planeGeometry, planeMaterial);
   plane.receiveShadow = true;
   plane.rotation.x = -0.5 * Math.PI;
@@ -248,6 +265,28 @@ function init() {
     return stats;
   }
 
+  // Detect mobile devices in the user agent
+  var is_mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+
+  // Conditionally load VR or Fly controls, based on whether we're on a mobile device
+  if (is_mobile) {
+    var controls = new THREE.VRControls(camera);
+  } else {
+    // WASD-style movement controls
+    var controls = new THREE.OrbitControls(camera);
+
+    // Disable automatic forward movement
+    controls.autoForward = false;
+
+    // Click and drag to look around with the mouse
+    controls.dragToLook = true;
+
+    // Movement and roll speeds, adjust these and see what happens!
+    controls.movementSpeed = 20;
+    controls.rollSpeed = Math.PI / 12;
+  }
   //OnResize
   function onResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -262,28 +301,15 @@ function init() {
     cube.rotation.y += 0.02;
     cube.rotation.z += 0.02;
     sphere.rotation.y += 0.02;
+
     requestAnimationFrame(animate);
     // renderer.render(scene, camera);
-    effect.render(scene, camera);
+    manager.render(scene, camera);
+    // effect.render(scene, camera);
   }
 
   // listen to the resize events
   window.addEventListener("resize", onResize, false);
 }
 
-var elem = document.getElementById("container");
-function openFullscreen() {
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.mozRequestFullScreen) {
-    /* Firefox */
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) {
-    /* Chrome, Safari & Opera */
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) {
-    /* IE/Edge */
-    elem.msRequestFullscreen();
-  }
-}
 window.onload = init;
