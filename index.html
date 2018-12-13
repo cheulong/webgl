@@ -8,12 +8,20 @@
     <script src="./libs/OrbitControls.js"></script>
     <script src="./libs/stats.js"></script>
     <script src="./libs/dat.gui.js"></script>
-
+    <script src="./libs/StereoEffect.js"></script>
+    <script src="./libs/DeviceOrientationControls.js"></script>
+    <script src="./libs/WebVR.js"></script>
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <div id="WebGL-output"></div>
-    <div id="Stats-output"></div>
+    <button onclick="openFullscreen();" style="margin-left:20%">
+      Fullscreen
+    </button>
+    <div id="container">
+      <div id="WebGL-output"></div>
+      <div id="Stats-output"></div>
+    </div>
+
     <script src="./main.js"></script>
   </body>
 </html>

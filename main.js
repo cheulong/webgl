@@ -17,6 +17,8 @@ function init() {
     1000
   );
   var controls = new THREE.OrbitControls(camera);
+  controls.enableZoom = false;
+  controls.enablePan = false;
   camera.position.x = -30;
   camera.position.y = 40;
   camera.position.z = 30;
@@ -26,10 +28,29 @@ function init() {
   var renderer = new THREE.WebGLRenderer();
   renderer.setClearColor(new THREE.Color(0xeeeeee));
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMapEnabled = true;
+  renderer.shadowMap.enabled = true;
   renderer.shadowMapSoft = true;
 
-  // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  function setOrientationControls(e) {
+    if (!e.alpha) {
+      return;
+    }
+
+    controls = new THREE.DeviceOrientationControls(camera, true);
+    controls.connect();
+    controls.update();
+
+    element.addEventListener("click", fullscreen, false);
+
+    window.removeEventListener(
+      "deviceorientation",
+      setOrientationControls,
+      true
+    );
+  }
+  window.addEventListener("deviceorientation", setOrientationControls, true);
+  //Effect
+  effect = new THREE.StereoEffect(renderer);
 
   // //Add axes
   var axes = new THREE.AxesHelper(20);
@@ -49,6 +70,36 @@ function init() {
   sphereLightMesh.position.set(0, 10, 0);
   scene.add(sphereLightMesh);
 
+  //Add skybox
+  var skyboxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
+  var skyboxMaterials = [
+    new THREE.MeshBasicMaterial({
+      map: new THREE.TextureLoader().load("./resource/nevada_ft.png"),
+      side: THREE.DoubleSide
+    }),
+    new THREE.MeshBasicMaterial({
+      map: new THREE.TextureLoader().load("./resource/nevada_bk.png"),
+      side: THREE.DoubleSide
+    }),
+    new THREE.MeshBasicMaterial({
+      map: new THREE.TextureLoader().load("./resource/nevada_up.png"),
+      side: THREE.DoubleSide
+    }),
+    new THREE.MeshBasicMaterial({
+      map: new THREE.TextureLoader().load("./resource/nevada_dn.png"),
+      side: THREE.DoubleSide
+    }),
+    new THREE.MeshBasicMaterial({
+      map: new THREE.TextureLoader().load("./resource/nevada_rt.png"),
+      side: THREE.DoubleSide
+    }),
+    new THREE.MeshBasicMaterial({
+      map: new THREE.TextureLoader().load("./resource/nevada_lf.png"),
+      side: THREE.DoubleSide
+    })
+  ];
+  var skybox = new THREE.Mesh(skyboxGeo, skyboxMaterials);
+  scene.add(skybox);
   // add point lighting
   var pointDistance = 10;
   var pointIntensity = 0.4;
@@ -92,9 +143,9 @@ function init() {
   var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
   cube.name = "cube-1";
   cube.castShadow = true;
-  cube.position.x = -4;
-  cube.position.y = 3;
-  cube.position.z = 10;
+  cube.position.x = 10;
+  cube.position.y = 8;
+  cube.position.z = 0;
   scene.add(cube);
 
   //Add Sphere
@@ -110,6 +161,7 @@ function init() {
 
   var sphere = new THREE.Mesh(sphereGeometry, [sphereMaterial, material2]);
   sphere.castShadow = true;
+  sphere.receiveShadow = true;
   sphere.position.x = 20;
   sphere.position.y = 4;
   sphere.position.z = 2;
@@ -201,21 +253,37 @@ function init() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    effect.setSize(window.innerWidth, window.innerHeight);
   }
 
   function animate() {
     stats.update();
-
     cube.rotation.x += 0.02;
     cube.rotation.y += 0.02;
     cube.rotation.z += 0.02;
     sphere.rotation.y += 0.02;
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    // renderer.render(scene, camera);
+    effect.render(scene, camera);
   }
 
   // listen to the resize events
   window.addEventListener("resize", onResize, false);
 }
 
+var elem = document.getElementById("container");
+function openFullscreen() {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) {
+    /* Firefox */
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) {
+    /* Chrome, Safari & Opera */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) {
+    /* IE/Edge */
+    elem.msRequestFullscreen();
+  }
+}
 window.onload = init;
